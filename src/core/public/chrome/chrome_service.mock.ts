@@ -40,6 +40,7 @@ const createSetupContractMock = () => {
     registerCollapsibleNavHeader: jest.fn(),
     addNavLinksToGroup: jest.fn(),
     getNavGroupsMap$: getGroupsMapMock,
+    getNavGroupEnabled: jest.fn(),
   };
 };
 
@@ -91,6 +92,7 @@ const createStartContractMock = () => {
     getCustomNavLink$: jest.fn(),
     setCustomNavLink: jest.fn(),
     getNavGroupsMap$: jest.fn(),
+    getNavGroupEnabled: jest.fn(),
   };
   startContract.navLinks.getAll.mockReturnValue([]);
   startContract.getIsVisible$.mockReturnValue(new BehaviorSubject(false));

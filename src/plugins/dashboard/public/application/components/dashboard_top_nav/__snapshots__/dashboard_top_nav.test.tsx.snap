@@ -137,6 +137,7 @@ exports[`Dashboard top nav render in embed mode 1`] = `
               "getIsNavDrawerLocked$": [MockFunction],
               "getIsVisible$": [MockFunction],
               "getNavGroupsMap$": [MockFunction],
+              "getNavGroupEnabled": [MockFunction],
               "logos": Object {
                 "AnimatedMark": Object {
                   "dark": Object {
@@ -1138,6 +1139,7 @@ exports[`Dashboard top nav render in embed mode, and force hide filter bar 1`] =
               "getIsNavDrawerLocked$": [MockFunction],
               "getIsVisible$": [MockFunction],
               "getNavGroupsMap$": [MockFunction],
+              "getNavGroupEnabled": [MockFunction],
               "logos": Object {
                 "AnimatedMark": Object {
                   "dark": Object {
@@ -2139,6 +2141,7 @@ exports[`Dashboard top nav render in embed mode, components can be forced show b
               "getIsNavDrawerLocked$": [MockFunction],
               "getIsVisible$": [MockFunction],
               "getNavGroupsMap$": [MockFunction],
+              "getNavGroupEnabled": [MockFunction],
               "logos": Object {
                 "AnimatedMark": Object {
                   "dark": Object {
@@ -3140,6 +3143,7 @@ exports[`Dashboard top nav render in full screen mode with appended URL param bu
               "getIsNavDrawerLocked$": [MockFunction],
               "getIsVisible$": [MockFunction],
               "getNavGroupsMap$": [MockFunction],
+              "getNavGroupEnabled": [MockFunction],
               "logos": Object {
                 "AnimatedMark": Object {
                   "dark": Object {
@@ -4141,6 +4145,7 @@ exports[`Dashboard top nav render in full screen mode, no componenets should be 
               "getIsNavDrawerLocked$": [MockFunction],
               "getIsVisible$": [MockFunction],
               "getNavGroupsMap$": [MockFunction],
+              "getNavGroupEnabled": [MockFunction],
               "logos": Object {
                 "AnimatedMark": Object {
                   "dark": Object {
@@ -5142,6 +5147,7 @@ exports[`Dashboard top nav render with all components 1`] = `
               "getIsNavDrawerLocked$": [MockFunction],
               "getIsVisible$": [MockFunction],
               "getNavGroupsMap$": [MockFunction],
+              "getNavGroupEnabled": [MockFunction],
               "logos": Object {
                 "AnimatedMark": Object {
                   "dark": Object {

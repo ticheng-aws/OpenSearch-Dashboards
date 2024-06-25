@@ -90,6 +90,8 @@ async function start({
 }: { options?: any; cspConfigMock?: any; startDeps?: ReturnType<typeof defaultStartDeps> } = {}) {
   const service = new ChromeService(options);
 
+  service.setup({ uiSettings: startDeps.uiSettings });
+
   if (cspConfigMock) {
     startDeps.injectedMetadata.getCspConfig.mockReturnValue(cspConfigMock);
   }
@@ -139,8 +141,9 @@ describe('setup', () => {
     const customHeaderMock = React.createElement('TestCustomNavHeader');
     const renderMock = jest.fn().mockReturnValue(customHeaderMock);
     const chrome = new ChromeService({ browserSupportsCsp: true });
+    const uiSettings = uiSettingsServiceMock.createSetupContract();
 
-    const chromeSetup = chrome.setup();
+    const chromeSetup = chrome.setup({ uiSettings });
     chromeSetup.registerCollapsibleNavHeader(renderMock);
 
     const chromeStart = await chrome.start(defaultStartDeps());
@@ -155,8 +158,9 @@ describe('setup', () => {
     const customHeaderMock = React.createElement('TestCustomNavHeader');
     const renderMock = jest.fn().mockReturnValue(customHeaderMock);
     const chrome = new ChromeService({ browserSupportsCsp: true });
+    const uiSettings = uiSettingsServiceMock.createSetupContract();
 
-    const chromeSetup = chrome.setup();
+    const chromeSetup = chrome.setup({ uiSettings });
     // call 1st time
     chromeSetup.registerCollapsibleNavHeader(renderMock);
     // call 2nd time
@@ -171,8 +175,9 @@ describe('setup', () => {
     const warnMock = jest.fn();
     jest.spyOn(console, 'warn').mockImplementation(warnMock);
     const chrome = new ChromeService({ browserSupportsCsp: true });
+    const uiSettings = uiSettingsServiceMock.createSetupContract();
 
-    const chromeSetup = chrome.setup();
+    const chromeSetup = chrome.setup({ uiSettings });
 
     chromeSetup.addNavLinksToGroup(mockedGroupFoo, [mockedGroupFoo, mockedGroupBar]);
     chromeSetup.addNavLinksToGroup(mockedGroupBar, [mockedGroupBar]);
@@ -187,8 +192,9 @@ describe('setup', () => {
     const warnMock = jest.fn();
     jest.spyOn(console, 'warn').mockImplementation(warnMock);
     const chrome = new ChromeService({ browserSupportsCsp: true });
+    const uiSettings = uiSettingsServiceMock.createSetupContract();
 
-    const chromeSetup = chrome.setup();
+    const chromeSetup = chrome.setup({ uiSettings });
 
     chromeSetup.addNavLinksToGroup(mockedGroupFoo, [mockedNavLinkFoo, mockedGroupFoo]);
     chromeSetup.addNavLinksToGroup(mockedGroupBar, [mockedGroupBar]);
@@ -199,6 +205,15 @@ describe('setup', () => {
     expect(warnMock).toBeCalledWith(
       `[ChromeService] Navlink of ${mockedGroupFoo.id} has already been registered in group ${mockedGroupFoo.id}`
     );
+  });
+
+  it('should return navGroupEnabled from ui settings', () => {
+    const chrome = new ChromeService({ browserSupportsCsp: true });
+    const uiSettings = uiSettingsServiceMock.createSetupContract();
+    uiSettings.get$.mockImplementation(() => new Rx.BehaviorSubject(true));
+
+    const chromeSetup = chrome.setup({ uiSettings });
+    expect(chromeSetup.getNavGroupEnabled()).toBe(true);
   });
 });
 
@@ -544,8 +559,9 @@ describe('start', () => {
     it('should be able to get the groups registered through addNavLinksToGroups', async () => {
       const startDeps = defaultStartDeps([]);
       const chrome = new ChromeService({ browserSupportsCsp: true });
+      const uiSettings = uiSettingsServiceMock.createSetupContract();
 
-      const chromeSetup = chrome.setup();
+      const chromeSetup = chrome.setup({ uiSettings });
 
       chromeSetup.addNavLinksToGroup(mockedGroupFoo, [mockedNavLinkFoo]);
       chromeSetup.addNavLinksToGroup(mockedGroupBar, [mockedNavLinkBar]);
@@ -558,6 +574,15 @@ describe('start', () => {
       expect(groupsMap[mockedGroupFoo.id].navLinks.length).toEqual(1);
       expect(groupsMap[mockedGroupBar.id].navLinks.length).toEqual(1);
     });
+  });
+
+  it('should return navGroupEnabled from ui settings', async () => {
+    const uiSettings = uiSettingsServiceMock.createSetupContract();
+    uiSettings.get$.mockImplementation(() => new Rx.BehaviorSubject(true));
+    const startDeps = defaultStartDeps();
+    const { chrome } = await start({ startDeps: { ...startDeps, uiSettings } });
+
+    expect(chrome.getNavGroupEnabled()).toBe(true);
   });
 });
 
@@ -589,5 +614,20 @@ describe('stop', () => {
         chrome.getHelpExtension$()
       ).toPromise()
     ).resolves.toBe(undefined);
+  });
+
+  it('should not update navGroupEnabled after stopped', async () => {
+    const uiSettings = uiSettingsServiceMock.createSetupContract();
+    const navGroupEnabled$ = new Rx.BehaviorSubject(true);
+    uiSettings.get$.mockImplementation(() => navGroupEnabled$);
+    const startDeps = defaultStartDeps();
+    const { chrome, service } = await start({ startDeps: { ...startDeps, uiSettings } });
+
+    navGroupEnabled$.next(false);
+    expect(chrome.getNavGroupEnabled()).toBe(false);
+
+    service.stop();
+    navGroupEnabled$.next(true);
+    expect(chrome.getNavGroupEnabled()).toBe(false);
   });
 });

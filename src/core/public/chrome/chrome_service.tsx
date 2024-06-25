@@ -31,7 +31,15 @@
 import { EuiBreadcrumb, IconType } from '@elastic/eui';
 import React from 'react';
 import { FormattedMessage } from '@osd/i18n/react';
-import { BehaviorSubject, combineLatest, merge, Observable, of, ReplaySubject } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  merge,
+  Observable,
+  of,
+  ReplaySubject,
+  Subscription,
+} from 'rxjs';
 import { flatMap, map, takeUntil } from 'rxjs/operators';
 import { EuiLink } from '@elastic/eui';
 import { mountReactNode } from '../utils/mount';
@@ -90,6 +98,10 @@ interface ConstructorParams {
   browserSupportsCsp: boolean;
 }
 
+export interface SetupDeps {
+  uiSettings: IUiSettingsClient;
+}
+
 export interface StartDeps {
   application: InternalApplicationStart;
   docLinks: DocLinksStart;
@@ -117,6 +129,8 @@ export class ChromeService {
   private readonly docTitle = new DocTitleService();
   private readonly navGroupsMap$ = new BehaviorSubject<Record<string, NavGroupItemInMap>>({});
   private collapsibleNavHeaderRender?: CollapsibleNavHeaderRender;
+  private navGroupEnabled: boolean = false;
+  private navGroupEnabledUiSettingsSubscription: Subscription | undefined;
 
   constructor(private readonly params: ConstructorParams) {}
 
@@ -179,7 +193,12 @@ export class ChromeService {
     return currentGroupsMap;
   }
 
-  public setup(): ChromeSetup {
+  public setup({ uiSettings }: SetupDeps): ChromeSetup {
+    this.navGroupEnabledUiSettingsSubscription = uiSettings
+      .get$('navGroupEnabled', false)
+      .subscribe((value) => {
+        this.navGroupEnabled = value;
+      });
     return {
       registerCollapsibleNavHeader: (render: CollapsibleNavHeaderRender) => {
         if (this.collapsibleNavHeaderRender) {
@@ -202,6 +221,7 @@ export class ChromeService {
         this.navGroupsMap$.next(navGroupsMapAfterAdd);
       },
       getNavGroupsMap$: () => this.navGroupsMap$.pipe(takeUntil(this.stop$)),
+      getNavGroupEnabled: () => this.navGroupEnabled,
     };
   }
 
@@ -385,12 +405,14 @@ export class ChromeService {
       },
 
       getNavGroupsMap$: () => this.navGroupsMap$.pipe(takeUntil(this.stop$)),
+      getNavGroupEnabled: () => this.navGroupEnabled,
     };
   }
 
   public stop() {
     this.navLinks.stop();
     this.stop$.next();
+    this.navGroupEnabledUiSettingsSubscription?.unsubscribe();
   }
 }
 
@@ -408,6 +430,10 @@ export interface ChromeSetup {
   registerCollapsibleNavHeader: (render: CollapsibleNavHeaderRender) => void;
   addNavLinksToGroup: (group: ChromeNavGroup, navLinks: ChromeRegistrationNavLink[]) => void;
   getNavGroupsMap$: () => Observable<Record<string, NavGroupItemInMap>>;
+  /**
+   * Get a boolean value to indicates whether use case is enabled
+   */
+  getNavGroupEnabled: () => boolean;
 }
 
 /**
@@ -536,6 +562,10 @@ export interface ChromeStart {
   getIsNavDrawerLocked$(): Observable<boolean>;
 
   getNavGroupsMap$: ChromeSetup['getNavGroupsMap$'];
+  /**
+   * Get a boolean value to indicates whether use case is enabled
+   */
+  getNavGroupEnabled: () => boolean;
 }
 
 /** @internal */
