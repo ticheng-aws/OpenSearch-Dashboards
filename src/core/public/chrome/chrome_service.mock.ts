@@ -34,8 +34,12 @@ import { ChromeBadge, ChromeBreadcrumb, ChromeService, InternalChromeStart } fro
 import { getLogosMock } from '../../common/mocks';
 
 const createSetupContractMock = () => {
+  const getGroupsMapMock = jest.fn();
+  getGroupsMapMock.mockReturnValue(new BehaviorSubject({}));
   return {
     registerCollapsibleNavHeader: jest.fn(),
+    addNavLinksToGroup: jest.fn(),
+    getNavGroupsMap$: getGroupsMapMock,
   };
 };
 
@@ -86,6 +90,7 @@ const createStartContractMock = () => {
     getIsNavDrawerLocked$: jest.fn(),
     getCustomNavLink$: jest.fn(),
     setCustomNavLink: jest.fn(),
+    getNavGroupsMap$: jest.fn(),
   };
   startContract.navLinks.getAll.mockReturnValue([]);
   startContract.getIsVisible$.mockReturnValue(new BehaviorSubject(false));
@@ -95,6 +100,7 @@ const createStartContractMock = () => {
   startContract.getCustomNavLink$.mockReturnValue(new BehaviorSubject(undefined));
   startContract.getHelpExtension$.mockReturnValue(new BehaviorSubject(undefined));
   startContract.getIsNavDrawerLocked$.mockReturnValue(new BehaviorSubject(false));
+  startContract.getNavGroupsMap$.mockReturnValue(new BehaviorSubject({}));
   return startContract;
 };
 
